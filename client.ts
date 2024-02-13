@@ -3,8 +3,6 @@ import * as readline from "readline";
 
 import { decoder, encoder } from "./utils";
 import { MessageType } from "./types";
-import { logConnected } from "./logger";
-
 // Create a TCP client socket
 const PORT = 3000;
 const client = new net.Socket();
@@ -27,26 +25,37 @@ function sendMessage(
 }
 
 client.connect(PORT, "localhost", () => {
-  logConnected();
   // Recieving Data
   client.on("data", (data) => {
     const { type, payload } = decoder(data);
     switch (type) {
       case MessageType.INITIATION:
-        console.log(`Server says: ${payload.toString()}`);
+        console.log(`Server: ${payload.toString()}`);
         rl.question("Please enter your password: ", (password) => {
           sendMessage(client, MessageType.AUTH_REQUEST, password);
         });
         break;
       case MessageType.AUTH_SUCCESS:
         console.clear();
-        console.log(`Server says: ${payload.toString()}`);
+        console.log(`- Server: ${payload.toString()}`);
+        console.log(
+          "Enter 0 to display a list of possible opponents\nEnter 1, to request a match\nexit to exit"
+        );
         rl.on("line", (line) => {
           if (line === "0") {
             sendMessage(client, MessageType.CLIENT_LIST_REQUEST, line);
           } else if (line === "1") {
             sendMessage(client, MessageType.MATCH_REQUEST, line);
+          } else if (line === "exit") {
+            client.destroy();
+            return;
           }
+        });
+        break;
+      case MessageType.AUTH_FAILURE:
+        console.log(`Server: ${payload.toString()}`);
+        rl.question("Please enter your password: ", (password) => {
+          sendMessage(client, MessageType.AUTH_REQUEST, password);
         });
         break;
       case MessageType.CLIENT_LIST_RESPONSE:
@@ -63,33 +72,47 @@ client.connect(PORT, "localhost", () => {
       case MessageType.MATCH_RESPONSE:
         console.clear();
         rl.question(`${payload}: `, (message) => {
-          sendMessage(client, MessageType.MATCH_CLIENT_ID, message);
+          if (message === "exit") {
+            sendMessage(client, MessageType.MATCH_GIVE_UP, message);
+          } else {
+            sendMessage(client, MessageType.MATCH_CLIENT_ID, message);
+          }
         });
         break;
       case MessageType.MATCH_CLIENT_ID_ERROR:
         console.clear();
         rl.question(`There was an error, ${payload} : `, (message) => {
           if (message === "exit") {
-            console.clear();
-            return;
+            sendMessage(client, MessageType.CLIENT_LIST_REQUEST, message);
+          } else {
+            sendMessage(client, MessageType.MATCH_CLIENT_ID, message);
           }
-          sendMessage(client, MessageType.MATCH_CLIENT_ID, message);
         });
         break;
       case MessageType.MATCH_CLIENT_ID_NOTIFICATION:
-        console.clear();
         console.log(`Notification: ${payload}`);
         rl.question(`Please enter your first attempt: `, (message) => {
-          sendMessage(client, MessageType.MATCH_ATTEMPT, message);
+          if (message === "exit") {
+            sendMessage(client, MessageType.MATCH_GIVE_UP, message);
+          } else {
+            sendMessage(client, MessageType.MATCH_ATTEMPT, message);
+          }
         });
         break;
       case MessageType.MATCH_ATTEMPT_WRONG:
         rl.question(`Whoops, not right, try again: `, (message) => {
-          sendMessage(client, MessageType.MATCH_ATTEMPT, message);
+          if (message === "exit") {
+            sendMessage(client, MessageType.MATCH_GIVE_UP, message);
+          } else {
+            sendMessage(client, MessageType.MATCH_ATTEMPT, message);
+          }
         });
         break;
+      case MessageType.MATCH_END_PREMATURE:
+        console.log("Match ended prematurely, you can start a new one.\n");
+        break;
       case MessageType.MATCH_HINT:
-        console.log(`${payload.toString()}`);
+        console.log(`\nYou've been given a hint: ${payload.toString()}\n`);
         break;
       case MessageType.MATCH_ATTEMPT_RIGHT:
         console.clear();
@@ -117,5 +140,6 @@ client.connect(PORT, "localhost", () => {
 
 // Handle connection close
 client.on("close", () => {
+  rl.close();
   console.log("Connection closed.");
 });
