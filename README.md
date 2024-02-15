@@ -1,7 +1,7 @@
 ## Dear Developer team, or Recruiting team, Here are the instructions on my idea of solution to test task.
 
 + Other relevant Repos: 
-  + https://github.com/rg-1708/test-client-luxonis
+  + https://github.com/rg-1708/test-server-luxonis
   + [executables](https://github.com/rg-1708/Luxonis-Test)
 
 1. Run the client, (the server should be running) <br/>
