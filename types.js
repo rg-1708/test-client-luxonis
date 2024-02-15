@@ -22,5 +22,7 @@ var MessageType;
     MessageType[MessageType["MATCH_ATTEMPT_WRONG"] = 15] = "MATCH_ATTEMPT_WRONG";
     MessageType[MessageType["MATCH_ATTEMPT_RIGHT"] = 16] = "MATCH_ATTEMPT_RIGHT";
     MessageType[MessageType["MATCH_GIVE_UP"] = 17] = "MATCH_GIVE_UP";
-    MessageType[MessageType["MATCH_END_PREMATURE"] = 17] = "MATCH_END_PREMATURE";
+    MessageType[MessageType["MATCH_END_PREMATURE"] = 18] = "MATCH_END_PREMATURE";
+    MessageType[MessageType["MATCH_END_GUESSED"] = 19] = "MATCH_END_GUESSED";
+    MessageType[MessageType["RESET"] = 21] = "RESET";
 })(MessageType = exports.MessageType || (exports.MessageType = {}));

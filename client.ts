@@ -41,7 +41,7 @@ const match_request_commands = [
   },
 ];
 
-const display_cli_instructions = (type: MessageType) => {
+function display_cli_instructions(type: MessageType): void {
   switch (type) {
     case MessageType.AUTH_SUCCESS:
     case MessageType.CLIENT_LIST_RESPONSE:
@@ -51,14 +51,14 @@ const display_cli_instructions = (type: MessageType) => {
       console.table(match_request_commands);
       break;
   }
-};
-const write_cli_prefix = () => {
+}
+function write_cli_prefix(): void {
   process.stdout.write(cli_input_prefix);
-};
+}
 
-const display_cli_formatted_list = (payload: Buffer) => {
+function display_cli_formatted_list(payload: Buffer): void {
   let list = payload.toString().split(",");
-  if (list.length === 0 || (list.length === 1 && list.at(0) === "")) {
+  if (list.length === 0 || (list.length === 1 && list[0] === "")) {
     console.log(`Sorry, currently no opponents are online.\n`);
     return;
   }
@@ -69,7 +69,7 @@ const display_cli_formatted_list = (payload: Buffer) => {
   });
   console.log(`List of possible opponents:\n`);
   console.table(formattedList);
-};
+}
 
 function sendMessage(
   socket: net.Socket,
